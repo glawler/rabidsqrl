@@ -1,0 +1,19 @@
+RabidSQrL is an SQL injection attack tool. 
+------------------------------------------
+
+Degrees of freedom in RabidSQrl are:
+- Number of hosts from which to attack.
+- Types of SQL Injection attacks to perform.
+
+The main configuration file, rabidsqrl.conf, describes the types and
+targets of the attacks.
+
+Currently supported attacks:
+- None
+
+To be supported attacks:
+- Stacked Queries
+- Move file from attacker path to victim path via database manipulation
+- Per application second order SQL Injection
+    - Wordpress
+    - Simple Machines Forum (SMF)
