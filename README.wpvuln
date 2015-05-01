@@ -1,0 +1,19 @@
+Introduce vulnerability into the wpvuln machine by adding the following two lines
+after the title declaration at line 68 (or anywhere really) in /var/www/wp-login.php:
+
+<!--- <?php global $wpdb; var_dump($wpdb->get_results(stripslashes($_GET['inline']))); ?> --->                                               
+<!--- <?php global $wpdb; var_dump($wpdb->query("SELECT * from wp_users WHERE user_login='" . stripslashes($_GET['inject'] . "'"))); ?> ---> 
+
+These are not subtle vulnerabilities, but large truck-sized holes. The 'inline' attribute can be 
+used to to run arbitrary SQL on the server. The 'inject' attribute can be use for stacked sql injections.
+The output of the SQL will be embedded in the returned HTML file as comments after the title.
+
+For the file write attack to work, the user that Wordpress runs as must have file write privileges. This can
+be accomplished by giving the user all privileges:
+
+> mysql
+> GRANT ALL PRIVILEGES ON *.* TO "wpuser"@"localhost" IDENTIFIED BY "password";
+^D
+
+The webserver does not have to be restarted nor the Wordpress application reloaded after these
+changes are made.
