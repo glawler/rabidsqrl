@@ -1,2 +1,6 @@
 MANIFEST
 dist/*
+build/*
+*.swp
+*.pyc
+*.conf
