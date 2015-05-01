@@ -37,10 +37,28 @@ Running:
 --------
 rabidsqrl is invoked via loading it as a python3 module.
 
+The usage string of rabdsqrl is:
+
+usage: rabidsqrl [-h] [-c CONFIG] [-g]
+                 [-l {none,all,debug,info,warning,error,critical}]
+
+rabidsqlr - an SQL Injection tool
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -c CONFIG, --config CONFIG
+                        Path to the configuration file.
+  -g, --generate        Write a sample config file to stdout.
+  -l {none,all,debug,info,warning,error,critical}, --loglevel {none,all,debug,info,warning,error,critical}
+                        The level at which to log. Must be one of none, debug,
+                        info, warning, error, or critical. Default is none.
+                        (This is mostly used for debugging.)
+
+
+examples:
 > python3 -m rabidsqrl --help
-
 > python3 -m rabidsqrl -c /tmp/my-attack.conf -l info
-
+> python3 -m rabidsqrl -g > sample.conf   
 
 Configuration File 
 ------------------------------------------
