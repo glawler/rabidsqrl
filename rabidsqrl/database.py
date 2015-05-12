@@ -20,8 +20,8 @@ class Database(object):
     def _filewrite_seq_myqsl(self, pathfrom, pathto):
         table = 'notsuspicious'
         statements = []
-        statements.append('CREATE TABLE {} (data BLOB)'.format(table))
-        chunk_len = 128
+        statements.append('CREATE TABLE {} (data LONGBLOB)'.format(table))
+        chunk_len = 1024
         with open(pathfrom, 'rb') as fd:
             chunk = fd.read(chunk_len)
             data = str(binascii.b2a_hex(chunk))[2:-1]   # the [2:-1] strips the b'...' from the string.
