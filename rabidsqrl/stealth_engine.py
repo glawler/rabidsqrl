@@ -8,33 +8,43 @@ class StealthEngineException(Exception):
     pass
 
 class StealthEngine(object):
-    def __init__(self):
-        self._interval_code = None
-        self._interval = None
-
-    @property
-    def interval(self):         # probably don't need a getter for this.
-        return self._interval
-
-    @interval.setter
-    def interval(self, i):
-        log.debug('Setting stealth interval to {}'.format(i))
-        try:
-            self._interval_code = compile(i, '<string>', 'eval')
-            self._interval = i
-        except Exception as e:
-            raise StealthEngineException('Error compiling interval expression "{}": {}'.format(i, e))
-
-    def execute_sequence(self, func, statements):
-        for i, s in enumerate(statements):
-            func(s)
-
-            if self._interval_code and i < len(statements)-1:
+    def __init__(self, config):
+        # This is confusing, sorry. For each stealth config setting, we set an object attribute
+        # the compiled code that is expressed in the config setting. For example if there is a 
+        # "stealth_interval" defined in the config, there will be a self._interval_code that exists
+        # in this object instance. That code can be eval'd to get a value.
+        for conf, attr in [('stealth_interval', '_interval_code'), ('stealth_size', '_message_size_code')]:
+            setattr(self, attr, None)
+            if conf in config:
+                c = config[conf]
                 try:
-                    interval = eval(self._interval_code)
+                    setattr(self, attr, compile(c, '<string>', 'eval'))
                 except Exception as e:
-                    raise StealthEngineException('Error evaluating interval expression: {}'.format(e))
+                    raise StealthEngineException('Error compiling expression "{}": {}'.format(c, e))
 
-                if interval > 0:
-                    log.debug('Sleeping for {} second(s).'.format(interval))
-                    sleep(interval)
+                log.debug('Set {} to {}'.format(conf, c))
+
+    def wait_interval(self):
+        if self._interval_code:
+            try:
+                interval = eval(self._interval_code)
+            except Exception as e:
+                raise StealthEngineException('Error evaluating interval expression: {}'.format(e))
+
+            if interval > 0:
+                log.debug('Sleeping for {} second(s).'.format(interval))
+                sleep(interval)
+
+    def has_message_size(self):
+        return getattr(self, '_message_size_code', False)
+
+    def message_size(self):
+        if self._message_size_code:
+            try:
+                size = eval(self._message_size_code)
+            except Exception as e:
+                raise StealthEngineException('Error evaluating size expression: {}'.format(e))
+        else:
+            raise StealthEngineException('Called message_size() without setting a size function.')
+
+        return int(size)

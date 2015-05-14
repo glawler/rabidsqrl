@@ -8,6 +8,7 @@ from .argParseLog import addLoggingArgs, handleLoggingArgs
 from .config import Config
 from .attack import AttackException
 from .attack_factory import AttackFactory
+from .connection_engine import ConnectionEngine
 
 log = logging.getLogger(__name__)
 
@@ -39,21 +40,22 @@ if __name__ == '__main__':   # this should alwasy be the case, but what the hell
         exit(2)
     except ValueError as e:
         print('Error parsing config: {}'.format(e), file=stderr)
-        exit(2)
+        exit(3)
 
     log.debug('conf: {}'.format(conf))
 
     # quick sanity check of config - all entries need a host and attack.
-    if [entry for entry in conf if 'host' not in entry or 'attack' not in entry]:
-        print('Missing "host" or "attack" in at least one config entry.')
-        exit(3)
+    if [entry for entry in conf if 'attack' not in entry]:
+        print('Missing "attack" in at least one config entry.')
+        exit(4)
 
+    attacks = []
     for entry in conf:
-        log.debug('Running attack against {}.'.format(entry['host']))
         try:
-            AttackFactory(entry).doAttack()
+            attacks.append(AttackFactory(entry))
         except AttackException as e:
             print('Error in attack: {}'.format(e), file=stderr)
-            exit(4)
+            exit(5)
 
-    exit(0)
+    ce = ConnectionEngine(attacks)
+    exit(ce.do_attacks())

