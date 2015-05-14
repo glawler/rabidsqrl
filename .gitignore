@@ -1,4 +1,5 @@
 MANIFEST
+tags
 dist/*
 build/*
 *.swp
