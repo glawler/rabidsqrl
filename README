@@ -1,7 +1,8 @@
 RabidSQrL is an SQL injection attack tool. 
 ------------------------------------------
 
-It requires python3. 
+It requires python3 and the python YAML package. (On Ubuntu you can 
+install these via "sudo apt-get install python3 python3-yaml".)
 
 Degrees of freedom in RabidSQrl are:
 - Types of SQL Injection attacks to perform.

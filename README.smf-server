@@ -1,7 +1,7 @@
 Do the following on the smf-server to introduce the vulnerability.
 
-> scp vulns/{injection,install-injection}.php root@smf-server:/var/www/lighttpd/forum
-> ssh root@smf-server 'php /var/www/lighttpd/forum/install-injection.php'
+> scp vulns/{smf_injection,smf_install_injection}.php root@smf-server:/var/www/lighttpd/forum
+> ssh root@smf-server 'php /var/www/lighttpd/forum/smf_install_injection.php'
 
 The first line copies two files to the server. One is a small installation script. 
 The other is the vulnerability. The vulnerability is invoked everytime a theme is loaded,
