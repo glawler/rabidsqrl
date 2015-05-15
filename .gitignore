@@ -4,4 +4,3 @@ dist/*
 build/*
 *.swp
 *.pyc
-*.conf
