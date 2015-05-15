@@ -51,5 +51,5 @@ if __name__ == '__main__':   # this should alwasy be the case, but what the hell
             print('Error in attack: {}'.format(e), file=stderr)
             exit(5)
 
-    ce = ConnectionEngine(attacks)
+    ce = ConnectionEngine(attacks, show_results=args.results)
     exit(ce.do_attacks())
