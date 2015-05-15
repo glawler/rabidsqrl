@@ -61,9 +61,7 @@ Configuration File
 Rabidsqrl is driven by its configuration file. This
 section describes the defined configuration parameters.
 
-The configuration file is JSON. (Note JSON does not allow inline 
-comments so the format may be changed to YAML or INI format
-in the future.
+The configuration file format is YAML. 
 
 The basic file format is a list of dictionaries. Each dictionary
 describes a single attack. For example, here is a configuration file
