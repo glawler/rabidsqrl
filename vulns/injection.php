@@ -2,14 +2,20 @@
 
 require_once(dirname(__FILE__) . '/SSI.php');
 
-function inject_doinject() {
+function inject_doinject() 
+{
     if (isset($_GET['inline']) || isset($_GET['inject']))
     {
         global $smcFunc;
         if (isset($_GET['inline']))
             $query = $_GET['inline'];
         else 
-            $query = "select posts from smf_member where id_member='" . $_GET['inject'] . "'";
+            $query = "select real_name from smf_members where id_member='" . $_GET['inject'] . "'";
+
+        $query = htmlspecialchars_decode($query, ENT_QUOTES);
+
+        if (!isset($_GET['blind'])) 
+            echo "<h5>query: $query</h5><p>";
 
         $result = $smcFunc['db_query']('', $query);
 
@@ -19,13 +25,8 @@ function inject_doinject() {
             var_dump($result);
             $raw_result = ob_get_clean();
 
-            echo "
-                <h5>Raw</h5>
-                $raw_result;
-                <p>
-                ";
-
-            echo "<h5>Results</h5><p>";
+            echo " <h5>Raw result: $raw_result</h5><p>";
+            echo "<h5>Results:</h5><p>";
 
             $headers = false; 
             echo '<table border="1">';
