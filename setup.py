@@ -3,7 +3,7 @@ from distutils.core import setup
 setup(
     name = "rabidsqlr",
     packages = ["rabidsqrl"],
-    version = "0.0.1",
+    version = "0.1.0",
     description = "SQLinjection attack tool",
     author = "Geoff Lawler",
     author_email = "glawler@tislabs.com",
