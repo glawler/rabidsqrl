@@ -41,20 +41,12 @@ function inject_doinject()
             echo "<div id=\"injection-raw-result\">$raw_result</div>";
 
             echo "<div id=\"injection-result\">"; 
-            $headers = false; 
             echo '<table border="1">';
             while ($row = $smcFunc['db_fetch_assoc']($result))
             {
-                if (!$headers) {
-                    echo "<tr>";
-                    foreach ($row as $key => $value) 
-                        echo "<td><b>$key</b></td>";
-                    echo "</tr>"; 
-                    $headers = true;
-                }
                 echo "<tr>";
-                foreach ($row as $value) 
-                    echo "<td>$value</td>";
+                foreach ($row as $key => $value) 
+                    echo "<td>$key : $value</td>";
                 echo "</tr>"; 
             }
             echo "</table>";

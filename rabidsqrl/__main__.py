@@ -1,6 +1,6 @@
 import argparse
 import logging
-import json
+import yaml
 
 from sys import stdout, stderr
 
@@ -28,7 +28,7 @@ if __name__ == '__main__':   # this should alwasy be the case, but what the hell
 
     try:
         with open(args.config, 'r') as fd:
-            conf = json.load(fd)
+            conf = yaml.load(fd)
     except FileNotFoundError:
         print('Error opening config file {}. Unable to continue.'.format(args.config), file=stderr)
         exit(2)

@@ -236,7 +236,7 @@ function inject_doinject()
     			foreach ($result as $row ) {
 				echo "<tr>";
 				foreach ($row as $key => $value)
-        				echo "<td>$value</td>";
+        				echo "<td>$key : $value</td>";
 				echo "</tr>";
 			}
     			echo "</table>";                                          
