@@ -1,0 +1,19 @@
+Do the following on the smf-server to introduce the vulnerability.
+
+> scp vulns/{injection,install-injection}.php root@smf-server:/var/www/lighttpd/forum
+> ssh root@smf-server 'php /var/www/lighttpd/forum/install-injection.php'
+
+The first line copies two files to the server. One is a small installation script. 
+The other is the vulnerability. The vulnerability is invoked everytime a theme is loaded,
+which is, I'm pretty sure, on every page. The installation script registers the 
+vulnerability function as an SMF integration callback function. 
+
+In order to allow single and double quotes in URLs passsed to the SMF application, 
+you need to disable checking for it. There may be a GUI way to do it, but we just 
+update the configuration tables in the database directly. 
+
+on smf-server:
+> su - postgres
+> psql injection
+> insert into smf_settings values ('disableQueryCheck', 1);
+> service lighttpd restart 
