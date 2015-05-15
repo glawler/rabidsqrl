@@ -4,30 +4,43 @@ require_once(dirname(__FILE__) . '/SSI.php');
 
 function inject_doinject() 
 {
-    if (isset($_GET['inline']) || isset($_GET['inject']))
+    // Ugh. I need to learn a bit more php is this pretty ugly.
+    if (isset($_GET['inline']) || isset($_GET['inject']) ||
+        isset($_GET['unionstr']) || isset($_GET['unionint']) ||
+        isset($_GET['unionstr2']) || isset($_GET['unioninti2']))
     {
         global $smcFunc;
         if (isset($_GET['inline']))
             $query = $_GET['inline'];
-        else 
+        elseif (isset($_GET['inject']))
             $query = "select real_name from smf_members where id_member='" . $_GET['inject'] . "'";
+        elseif (isset($_GET['unionstr']))
+            $query = "select real_name from smf_members where id_member='" . $_GET['unionstr'] . "'";
+        elseif (isset($_GET['unionstr2']))
+            $query = "select real_name,usertitle from smf_members where id_member='" . $_GET['unionstr2'] . "'";
+        elseif (isset($_GET['unionint']))
+            $query = "select id_group from smf_members where id_member='" . $_GET['unionint'] . "'";
+        elseif (isset($_GET['unionint2']))
+            $query = "select id_group,posts from smf_members where id_member='" . $_GET['unionint2'] . "'";
+        else  # should not happen.
+            return; 
 
         $query = htmlspecialchars_decode($query, ENT_QUOTES);
-
-        if (!isset($_GET['blind'])) 
-            echo "<h5>query: $query</h5><p>";
-
         $result = $smcFunc['db_query']('', $query);
+
 
         if (!isset($_GET['blind'])) 
         {
+            echo "<div id=\"injection\">";
+            echo "<div id=i\"query\">$query</div>";
+
             ob_start();
             var_dump($result);
             $raw_result = ob_get_clean();
 
-            echo " <h5>Raw result: $raw_result</h5><p>";
-            echo "<h5>Results:</h5><p>";
+            echo "<div id=\"injection-raw-result\">$raw_result</div>";
 
+            echo "<div id=\"injection-result\">"; 
             $headers = false; 
             echo '<table border="1">';
             while ($row = $smcFunc['db_fetch_assoc']($result))
@@ -45,6 +58,7 @@ function inject_doinject()
                 echo "</tr>"; 
             }
             echo "</table>";
+            echo "</div>"; 
         }
         $smcFunc['db_free_result']($result);
     }

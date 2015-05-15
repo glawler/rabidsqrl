@@ -11,9 +11,9 @@ require_once($sourcedir . '/Security.php');
 $smcFunc = array();
 loadDatabase();
 
-remove_integration_function('integrate_pre_include', '/var/www/lighttpd/forum/injection.php');
+remove_integration_function('integrate_pre_include', '/var/www/lighttpd/forum/smf_injection.php');
 remove_integration_function('integrate_menu_buttons', 'inject_doinject');
-add_integration_function('integrate_pre_include', '/var/www/lighttpd/forum/injection.php', TRUE);
+add_integration_function('integrate_pre_include', '/var/www/lighttpd/forum/smf_injection.php', TRUE);
 add_integration_function('integrate_menu_buttons', 'inject_doinject', TRUE);
 
 ?>
