@@ -32,7 +32,7 @@ function inject_doinject()
         if (!isset($_GET['blind'])) 
         {
             echo "<div id=\"injection\">";
-            echo "<div id=i\"query\">$query</div>";
+            echo "<div id=\"query\">$query</div>";
 
             ob_start();
             var_dump($result);
