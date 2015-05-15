@@ -5,7 +5,6 @@ import json
 from sys import stdout, stderr
 
 from .argParseLog import addLoggingArgs, handleLoggingArgs
-from .config import Config
 from .attack import AttackException
 from .attack_factory import AttackFactory
 from .connection_engine import ConnectionEngine
@@ -15,16 +14,11 @@ log = logging.getLogger(__name__)
 if __name__ == '__main__':   # this should alwasy be the case, but what the hell.
     ap = argparse.ArgumentParser(prog='rabidsqrl', description='rabidsqlr - an SQL Injection tool')
     ap.add_argument('-c', '--config', help='Path to the configuration file.')
-    ap.add_argument('-g', '--generate', action='store_true', help='Write a sample config file to stdout.')
+    ap.add_argument('-r', '--results', action='store_true', help='Show results of attack on stdout.')
     addLoggingArgs(ap)
 
     args = ap.parse_args()
     handleLoggingArgs(args)
-
-    if args.generate:
-        c = Config()
-        Config.sample(stdout)
-        exit(0)
 
     if not args.config:
         print('You need to specify a config file on the command line via the -c or --config arugment.', file=stderr)
