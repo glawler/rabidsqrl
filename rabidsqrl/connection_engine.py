@@ -6,6 +6,11 @@ from html.parser import HTMLParser
 log = logging.getLogger(__name__)
 
 class CEHTMLParser(HTMLParser):
+    '''
+    Take an HTML document with divs w/attributes 'query' and 'injection-result'
+    and print the div data to stdout. If the divs/attributes aren't there, nothing
+    is printed.
+    '''
     def __init__(self):
         super(CEHTMLParser, self).__init__(strict=False)
         self._show_data = False
@@ -29,9 +34,12 @@ class CEHTMLParser(HTMLParser):
                 self._show_data = False
 
 class ConnectionEngineException(Exception):
+    '''Exception class for ConnectionEngine. NOOP.'''
     pass
 
 class ConnectionEngine(object):
+    '''Take a list of URLs and run them, optionally showing
+    crafted results if asked.'''
     def __init__(self, attacks, show_results):
         self.attacks = attacks
         self.show_results = show_results

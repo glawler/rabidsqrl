@@ -213,7 +213,7 @@ function inject_doinject()
 	{
 		global $wpdb;
 		if (isset($_GET['inline']))
-			$query = $_GET['inline'];
+			$query = stripslashes($_GET['inline']);
 		elseif (isset($_GET['inject']))
 			$query = "SELECT user_login from wp_users WHERE user_login='" . stripslashes($_GET['inject']) . "'";
 
