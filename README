@@ -7,29 +7,35 @@ install these via "sudo apt-get install python3 python3-yaml".)
 Degrees of freedom in RabidSQrl are:
 - Types of SQL Injection attacks to perform.
 - Injection interval function.
+- Injection URL length (for file transfer attack)
 
 Currently supported attacks:
 - Direct injection.
-- Stacked Queries
+- Stacked Queries (postgres, not supported on MySQL)
 - Move file from attacker path to victim path via database manipulation
+- Read file on server to stdout on client
+- DOS attack on mysql
+- Show database users on server
+- discover MySQL version
+- Generic, user-defined SQL statements executed directly on the server.
 
-To be supported attacks:
-- Per application second order SQL Injection
-    - Wordpress
-    - Simple Machines Forum (SMF)
-- Other possible attacks to add
-    - Boolean-based blind SQL injection
-    - Error-based SQL injection
-    - UNION query SQL injection
-    - Time-based blind SQL injection
-    - Database stored procedure attacks
-    - Application extenstion attacks
+Note that these are attacks are targeted at specific datbase/application 
+platforms: mysql/wordpress and postgres/smf. The code base includes
+vulnerabilities that the user should install on the victim platforms. If
+the user does not have access to the victim machine, he or she can use
+sqlmap or other sql injection mapping tool to discover existing vulnerable
+URL attributes and customize the rabidsqrl configuration to support attacks
+using these discovered attacks. Rabidsqrl itself does not scan a victim
+for vulnerabilities. 
 
 Installation:
 -------------
 Rabidsqrl is installed via standard python distutils methods.
 
 > sudo python3 setup.py install
+
+See README.wpvuln and README.smf-server for details on how to install
+the vulnerabilies on these machines.
 
 Running:
 --------
@@ -46,15 +52,29 @@ optional arguments:
   -h, --help            show this help message and exit
   -c CONFIG, --config CONFIG
                         Path to the configuration file.
+  -r, --results         Show results of attack on stdout.
+  -b, --blind           If given, do not embed attack results in the
+                        responses. Makes the attack more stealthy at the cost
+                        of attack confirmation.
   -l {none,all,debug,info,warning,error,critical}, --loglevel {none,all,debug,info,warning,error,critical}
                         The level at which to log. Must be one of none, debug,
                         info, warning, error, or critical. Default is none.
                         (This is mostly used for debugging.)
 
-
 examples:
 > python3 -m rabidsqrl --help
 > python3 -m rabidsqrl -c /tmp/my-attack.conf -l info
+> python3 -m rabidsqrl -c examples/wpvuln-readfile.conf -r 
+
+Seeing the results of the attack. If -r (or --results) is given on the command
+line, rabidsqrl will parse the results of the attack and display them on the 
+command line. This functionality requires the rabidsqrl provided vulnerabilities
+to be installed on the victims. Note that if -b (--blind) is given, the results
+cannot be shown as they are not inserted into the results on the server-side.
+
+If -b (or --blind) is given, the pages that the server returns will not be altered
+in any way. This makes the attack stealthier at the expense of being unable to 
+tell directly if the attack was successful. 
 
 Configuration File 
 ------------------------------------------
