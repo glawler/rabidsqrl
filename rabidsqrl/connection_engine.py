@@ -43,7 +43,6 @@ class ConnectionEngine(object):
     def __init__(self, attacks, show_results):
         self.attacks = attacks
         self.show_results = show_results
-        self._resp_callbacks = []
 
     def do_attacks(self):
         for attack in self.attacks:
