@@ -40,13 +40,16 @@ class ConnectionEngineException(Exception):
 class ConnectionEngine(object):
     '''Take a list of URLs and run them, optionally showing
     crafted results if asked.'''
-    def __init__(self, attacks, show_results):
+    def __init__(self, attacks, show_results, blind):
         self.attacks = attacks
         self.show_results = show_results
+        self.blind = blind
 
     def do_attacks(self):
         for attack in self.attacks:
             for url in attack.next_url():
+                if self.blind:
+                    url += '&blind=1'
                 log.info('Sending request: {}'.format(url))
                 with urllib.request.urlopen(url) as fd:
                     resp = fd.read()

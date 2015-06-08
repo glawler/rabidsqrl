@@ -15,10 +15,16 @@ if __name__ == '__main__':   # this should alwasy be the case, but what the hell
     ap = argparse.ArgumentParser(prog='rabidsqrl', description='rabidsqlr - an SQL Injection tool')
     ap.add_argument('-c', '--config', help='Path to the configuration file.')
     ap.add_argument('-r', '--results', action='store_true', help='Show results of attack on stdout.')
+    ap.add_argument('-b', '--blind', action='store_true', help='If given, do not embed attack results in the responses. Makes the attack more stealthy at the cost of attack confirmation.')
     addLoggingArgs(ap)
 
     args = ap.parse_args()
     handleLoggingArgs(args)
+
+    if args.results and args.blind:
+        print('Having both --blind and --results on the command line makes no sense. Exiting '
+              'in a snit.')
+        exit(1)
 
     if not args.config:
         print('You need to specify a config file on the command line via the -c or --config arugment.', file=stderr)
@@ -51,5 +57,5 @@ if __name__ == '__main__':   # this should alwasy be the case, but what the hell
             print('Error in attack: {}'.format(e), file=stderr)
             exit(5)
 
-    ce = ConnectionEngine(attacks, show_results=args.results)
+    ce = ConnectionEngine(attacks, show_results=args.results, blind=args.blind)
     exit(ce.do_attacks())
