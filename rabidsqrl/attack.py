@@ -34,7 +34,10 @@ class Attack(object):
             self._se.wait_interval();
 
     def handle_response(self, response, sql):
-        pass
+        '''Handle the response. Return non-zero to stop processing. If non-zero,
+        you can specify an error string.'''
+        log.debug('Ignoring response in Attack base class.')
+        return 0, ''
 
     def __repr__(self):
         return '<Attack(name={})>'.format(self.attack)

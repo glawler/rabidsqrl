@@ -43,6 +43,7 @@ class ConnectionEngine(object):
     def __init__(self, attacks, show_results):
         self.attacks = attacks
         self.show_results = show_results
+        self._resp_callbacks = []
 
     def do_attacks(self):
         for attack in self.attacks:
@@ -54,6 +55,11 @@ class ConnectionEngine(object):
 
                     if self.show_results:
                         self._show_results(resp)
+                    
+                    errcode, errmess = attack.handle_response(str(resp), url)
+                    if errcode:
+                        print ('Error in attack: {}'.format(errmess))
+                        return 1
 
         return 0
 
