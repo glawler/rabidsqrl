@@ -16,5 +16,6 @@ on smf-server:
 > su - postgres
 > psql injection
 > insert into smf_settings values ('disableQueryCheck', 1);
-> ^D
+> ^D    # logout of psql
+> ^D    # logout of postgres owned shell
 > service lighttpd restart 
