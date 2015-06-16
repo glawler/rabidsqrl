@@ -81,7 +81,7 @@ class FileWriteAttack(Attack):
                     else:
                         data = binascii.b2a_hex(chunk).decode()
 
-                    statements.append('UPDATE {} SET data = concat(data,\'{}\''.format(table, data))
+                    statements.append('UPDATE {} SET data = concat(data,\'{}\')'.format(table, data))
 
         return table, statements
 
